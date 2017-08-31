@@ -4,7 +4,8 @@
 proxy:
   container_name: proxy
   restart: always
-  image: accenture/adop-nginx:0.3.0
+  image: lumaks/adop-nginx:official
+  #image: accenture/adop-nginx:0.3.1
   #build: ../images/docker-nginx/
   net: ${CUSTOM_NETWORK_NAME}
   ports:
@@ -12,6 +13,10 @@ proxy:
     - "443:443"
   environment:
     - "constraint:tier==public"
+    - "NGINX_PORT=${NGINX_PORT}"
+    - "NGINX_SSL=${NGINX_SSL}"
+    - "REDIRECT_PROTOCOL=${REDIRECT_PROTOCOL}"
+    - "LDAP_PROTOCOL=${LDAP_PROTOCOL}"
     - "LDAP_SERVER=${LDAP_SERVER}"
     - "LDAP_USERNAME=${LDAP_ADMIN},${LDAP_FULL_DOMAIN}"
     - "LDAP_PASSWORD=${LDAP_PWD}"
@@ -19,6 +24,9 @@ proxy:
     - "LDAP_GROUP_ATTRIBUTE=member"
     - "LDAP_USER_ID_ATTRIBUTE=cn"
     - "LDAP_USER_OBJECT_CLASS=inetOrgPerson"
+    - "http_proxy"
+    - "https_proxy"
+    - "no_proxy"
 
 ldap:
   container_name: ldap
@@ -29,7 +37,7 @@ ldap:
   expose:
     - "389"
   ports:
-    - "389/tcp:389/tcp"
+    - "389:389/tcp"
   environment:
     INITIAL_ADMIN_USER: ${INITIAL_ADMIN_USER}
     INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD}
@@ -92,6 +100,9 @@ gerrit:
     - "USER_NAME=${GERRIT_USER_NAME}"
     - "USER_EMAIL=${GERRIT_USER_EMAIL}"
     - "DOWNLOAD_SCHEME=http"
+    - "http_proxy"
+    - "https_proxy"
+    - "no_proxy"
 
 sensu-uchiwa:
   container_name: sensu-uchiwa
@@ -101,6 +112,9 @@ sensu-uchiwa:
   environment:
     SENSU_HOSTNAME: sensu-api
     SENSU_DC_NAME: Sensu
+    http_proxy:
+    https_proxy:
+    no_proxy:
   expose:
     - "3000"
 
@@ -178,7 +192,7 @@ sonar-mysql:
 sonar:
   container_name: sonar
   restart: always
-  image: accenture/adop-sonar:0.2.0
+  image: accenture/adop-sonar:0.3.2
   #build: ../images/docker-sonar/
   net: ${CUSTOM_NETWORK_NAME}
   expose:
@@ -198,6 +212,9 @@ sonar:
     - "LDAP_GROUP_REQUEST=(&(objectClass=groupOfUniqueNames)(uniqueMember={dn}))"
     - "LDAP_GROUP_ID_ATTRIBUTE=cn"
     - "SONARQUBE_JDBC_URL=jdbc:mysql://sonar-mysql:3306/${SONAR_MYSQL_DATABASE}?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true"
+    - "http_proxy"
+    - "https_proxy"
+    - "no_proxy"
 
 jenkins:
   container_name: jenkins
@@ -206,7 +223,7 @@ jenkins:
   #build: ../images/docker-jenkins/
   net: ${CUSTOM_NETWORK_NAME}
   ports:
-    - "50000/tcp:50000/tcp"
+    - "50000:50000/tcp"
   expose:
     - "8080"
     - "50000"
@@ -256,6 +273,9 @@ jenkins:
     DOCKER_CLIENT_CERT_PATH: ${DOCKER_CLIENT_CERT_PATH}
     DOCKER_NETWORK_NAME: ${CUSTOM_NETWORK_NAME}
     CARTRIDGE_SOURCES: ${CARTRIDGE_SOURCES}
+    http_proxy:
+    https_proxy:
+    no_proxy:
 
 jenkins-slave:
   container_name: jenkins-slave
@@ -269,6 +289,9 @@ jenkins-slave:
     SLAVE_EXECUTORS: ${SLAVE_EXECUTORS}
     INITIAL_ADMIN_USER: ${INITIAL_ADMIN_USER}
     INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD_PLAIN}
+    http_proxy:
+    https_proxy:
+    no_proxy:
 
 selenium-hub:
   container_name: selenium-hub
@@ -317,6 +340,9 @@ nexus:
     LDAP_USER_BASE_DN: "${LDAP_USER_BASE_DN}"
     LDAP_GROUP_BASE_DN: "${LDAP_GROUP_BASE_DN}"
     LDAP_BIND_PASSWORD: ${LDAP_PWD}
+    http_proxy:
+    https_proxy:
+    no_proxy:
 
 ldap-ltb:
   container_name: ldap-ltb
